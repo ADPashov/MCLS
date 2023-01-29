@@ -117,6 +117,27 @@ class Model:
         res += ' ' + str(date[2]) + 'г.'
         return res
 
+    def format_daily_sms(self, date):
+        data = []
+        prev = None
+        for index, entry in enumerate(self.daily_uniques):
+            if entry is not None:
+                if entry != prev:
+                    time, zone, name, phone = self.daily_schedule[index].split(' | ')
+                    data.append([phone[1:], name.split(' ')[0], time,[zone]])
+                else:
+                    data[entry][3].append(self.daily_schedule[index].split('| ')[1][:-1])
+                prev = entry
+
+        for entry in data:
+            for key in self.PACKAGES.keys():
+                if set(self.PACKAGES[key]).issubset(set(entry[3])):
+                    new_zones = [x for x in entry[3] if x not in self.PACKAGES[key]] + [key]
+                    entry[3] = new_zones
+        return data
+
+
+
     def get_current_date(self):
         return self.current_date
 
@@ -210,14 +231,13 @@ class Model:
         treatments = [list(treatment) for treatment in sorted(self.get_customer_treatments(), key=lambda x: x[2])]
         res = []
         for item in treatments:
-            entry = Template('$d.$m.$y | $time | $zone').substitute(d=item[0].day,
+            entry = Template('$d.$m.$y|$zone').substitute(d=item[0].day,
                                                                     m=item[0].month,
-                                                                    y=item[0].year,
-                                                                    time=item[1],
+                                                                    y=item[0].year-2000,
                                                                     zone=item[2])
             if item.pop():
                 i, hz, j = item[3:6]
-                entry += Template(' | I = $i | Hz = $hz | J = $j').substitute(i=i, hz=hz, j=j)
+                entry += Template('|I=$i|Hz=$hz|J=$j').substitute(i=i, hz=hz, j=j)
             res.append(entry)
         return res
 
@@ -496,3 +516,9 @@ class Model:
 
     def get_operator(self):
         return self.db.get_operator(self.current_date)
+
+    def is_daily_sms_sent(self, date):
+        return self.db.is_daily_sms_sent(date)
+
+    def set_daily_sms(self, date):
+        self.db.set_daily_sms(date)

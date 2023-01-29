@@ -8,7 +8,8 @@ import os
 
 # ALTER SEQUENCE customers_customer_id_seq RESTART WITH 2;
 # ALTER SEQUENCE treatments_treatment_id_seq RESTART WITH 1;
-# Filler treatments will be with customer id = 1, filler filler 00000 0 filler@filler.filler
+# ALTER TABLE notes DROP CONSTRAINT notes_customer_id_fkey,
+# ADD CONSTRAINT notes_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE cascade;
 class Database:
     def __init__(self):
         self.connection = None
@@ -290,6 +291,26 @@ class Database:
         except psycopg2.OperationalError:
             self.init_connection()
             return self.get_operator(date)
+
+    # SMS actions
+    def is_daily_sms_sent(self, date):
+        try:
+            query = 'SELECT is_sent FROM daily_sms WHERE date = %s'
+            self.cursor.execute(query, (self.transform_date(date),))
+            return self.cursor.fetchone()
+        except psycopg2.OperationalError:
+            self.init_connection()
+            return self.is_daily_sms_sent(date)
+
+    def set_daily_sms(self, date):
+        try:
+            query = 'INSERT INTO daily_sms(date, is_sent) VALUES(%s, %s)'
+            self.cursor.execute(query, (self.transform_date(date), True))
+            self.connection.commit()
+        except psycopg2.OperationalError:
+            self.init_connection()
+            self.set_daily_sms(date)
+
 
     #
 

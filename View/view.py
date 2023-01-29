@@ -3,7 +3,7 @@ from operator import itemgetter
 from tkinter import Tk, Frame, NSEW, Grid, messagebox, StringVar
 from main_panel import MainPanel
 import csv
-from datetime import datetime
+import datetime
 from add_customer import AddCustomer
 from edit_customer import EditCustomer
 from book_treatment import BookTreatment
@@ -47,7 +47,7 @@ class View(Tk):
     BG_COLOR = '#FE019A'
     BOX_COLOR = '#FF69B4'
 
-    FONT = ('Monotype Corsiva', 20)
+    FONT = ('Monotype Corsiva', 18)
     BUTTON_FONT = ('Monotype Corsiva', 25)
 
     CALENDAR_NORMALBG = '#D30E92'
@@ -192,6 +192,7 @@ class View(Tk):
         self.show_panel('loading')
         if date is not None:
             result, times = self.controller.get_daily_schedule(date)
+            self.main_frame.calendar_widgets['calendar'].selection_set(datetime.date(date[2],date[1], date[0]))
         if data is not None:
             result, times = data
         self.flush_screen('calendar')
@@ -324,7 +325,7 @@ class View(Tk):
             notes = self.controller.get_customer_notes()
         # Display notes
         num_notes = len(notes)
-        self.main_frame.resize_notes_box(num_notes)
+        self.main_frame.resize_notes_box(num_notes+1)
         for i in range(0, num_notes):
             self.main_frame.insert_note(i, notes[i][1])
 

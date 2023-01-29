@@ -2,11 +2,17 @@ import sqlite3
 import time
 from tkinter import StringVar
 
+import smsapi.exception
+from transliterate import translit
+
 import psycopg2.errors
 
 from Model.model import Model, NotFreeException, NoUserException, NoZoneException
 from View.view import View
 from thread_with_return import ThreadWithReturn
+import datetime
+from smsapi.client import SmsApiBgClient
+
 
 
 class Controller:
@@ -14,7 +20,51 @@ class Controller:
         self.model = Model(self)
         self.notify_var = None
         self.view = View(self)
-        self.view.display_daily_schedule(data=self.model.format_daily_scehdule(self.model.current_date))
+        self.sms_client = SmsApiBgClient(access_token='28jcabwPJ0yUN4An1Xm91vIXFtkRwdWikNMcHzaj')
+
+        today = self.model.current_date
+        sms_date = datetime.date(today[2], today[1], today[0])+datetime.timedelta(days=2)
+        self.view.display_daily_schedule(data=self.model.format_daily_scehdule([sms_date.day, sms_date.month, sms_date.year]))
+        self.send_reminder_sms([sms_date.day, sms_date.month, sms_date.year])
+        self.view.display_daily_schedule(data=self.model.format_daily_scehdule(today))
+
+    # SMS sending
+    def send_reminder_sms(self, date):
+        data = self.model.format_daily_sms(date)
+        result = []
+        message_single = 'Здравейте, {}! Напомняме Ви, че имате резервация за зона {} на {} от {}. Mon Cheri Laser Studio'
+        message_multi = 'Здравейте, {}! Напомняме Ви, че имате резервация за зони {} на {} от {}. Mon Cheri Laser Studio'
+        for entry in data:
+            date_str = '.'.join([str(x) for x in date])
+            zones = ', '.join(entry[3])
+            if len(entry[3])==1:
+                message = message_single.format(entry[1], zones, date_str, entry[2])
+            else:
+                message = message_multi.format(entry[1], zones, date_str, entry[2])
+
+            result.append([entry[0], translit(message,'bg', reversed=True)])
+            # result.append([entry[0], message])
+        flag = True
+        no_num = ''
+        if not self.model.is_daily_sms_sent(date):
+            for item in result:
+                if item[0] != '':
+                    try:
+                        print('Nomer: {}, Text: {}'.format(*item))
+                        self.sms_client.sms.send(to=item[0], message = item[1], test = "1")
+                    except smsapi.exception.SendException as e:
+                        # flag = False
+                        print(e)
+                else:
+                    no_num+=',\nно в деня има клиенти с липсващи номера'
+
+        if flag:
+            self.model.set_daily_sms(date)
+            self.view.show_error('СМС-ите за {} са изпратени успешно{}'.format(self.model.date_to_string(date), no_num))
+        else:
+            self.view.show_error('Грешка при изпращане на СМС')
+
+
 
     # Get constants section
     def get_main_zones(self):

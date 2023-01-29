@@ -1,4 +1,4 @@
-from tkinter import Frame, Label, Grid, NSEW, Entry, Listbox, END
+from tkinter import Frame, Label, Grid, NSEW, Entry, Listbox, END, Scrollbar, HORIZONTAL, BOTTOM, X, EW
 import customtkinter as ctk
 import tkcalendar as tkcalendar
 import datetime
@@ -24,7 +24,8 @@ class MainPanel(Frame):
         self.calendar_widgets = {}
         self.init_calendar()
 
-        self.root.make_resizable(self)
+        # self.root.make_resizable(self)
+        self.root.make_resizable(self, wide_rows=[7,9])
         self.double_click_flag = False
 
     def init_find(self):
@@ -44,35 +45,35 @@ class MainPanel(Frame):
         self.find_widgets['find_label'].grid(row=0, column=1, sticky=NSEW)
 
         # ID widgets
-        self.find_widgets['id_label'] = Label(self, text="Клиентски номер", height=2, bg=self.root.BG_COLOR)
+        self.find_widgets['id_label'] = Label(self, text="Кл. номер", bg=self.root.BG_COLOR)
         self.find_widgets['id_label'].grid(row=1, column=0, sticky=NSEW)
 
         self.find_widgets['id_box'] = Entry(self, bg=self.root.BOX_COLOR)
         self.find_widgets['id_box'].grid(row=1, column=1, sticky=NSEW)
 
         # First name widgets
-        self.find_widgets['fname_label'] = Label(self, text="Първо Име", height=2, bg=self.root.BG_COLOR)
+        self.find_widgets['fname_label'] = Label(self, text="Име", bg=self.root.BG_COLOR)
         self.find_widgets['fname_label'].grid(row=2, column=0, sticky=NSEW)
 
         self.find_widgets['fname_box'] = Entry(self, bg=self.root.BOX_COLOR)
         self.find_widgets['fname_box'].grid(row=2, column=1, sticky=NSEW)
 
         # Last name widgets
-        self.find_widgets['lname_label'] = Label(self, text="Фамилия", height=2, bg=self.root.BG_COLOR)
+        self.find_widgets['lname_label'] = Label(self, text="Фамилия", bg=self.root.BG_COLOR)
         self.find_widgets['lname_label'].grid(row=3, column=0, sticky=NSEW)
 
         self.find_widgets['lname_box'] = Entry(self, bg=self.root.BOX_COLOR)
         self.find_widgets['lname_box'].grid(row=3, column=1, sticky=NSEW)
 
         # Phone number widgets
-        self.find_widgets['phone_label'] = Label(self, text="Телефон", height=2, bg=self.root.BG_COLOR)
+        self.find_widgets['phone_label'] = Label(self, text="Телефон", bg=self.root.BG_COLOR)
         self.find_widgets['phone_label'].grid(row=4, column=0, sticky=NSEW)
 
         self.find_widgets['phone_box'] = Entry(self, bg=self.root.BOX_COLOR)
         self.find_widgets['phone_box'].grid(row=4, column=1, sticky=NSEW)
 
         # Mail widgets
-        self.find_widgets['mail_label'] = Label(self, text="Имейл", height=2, bg=self.root.BG_COLOR)
+        self.find_widgets['mail_label'] = Label(self, text="Имейл", bg=self.root.BG_COLOR)
         self.find_widgets['mail_label'].grid(row=5, column=0, sticky=NSEW)
 
         self.find_widgets['mail_box'] = Entry(self, bg=self.root.BOX_COLOR)
@@ -85,15 +86,21 @@ class MainPanel(Frame):
                                                          text_color=self.root.BUTTONS_TEXT,
                                                          hover_color=self.root.BUTTONS_HOVER)
         self.find_widgets['find_button'].configure(font=self.root.BUTTON_FONT)
-        self.find_widgets['find_button'].grid(row=6, column=1, sticky=NSEW)
+        self.find_widgets['find_button'].grid(row=6, column=0,columnspan=2, sticky=NSEW)
 
         # Bind the same search functionality also to the Enter key
         self.root.bind('<Return>', self.find_customer)
 
         # Results box
-        self.find_widgets['results_box'] = Listbox(self, bg=self.root.BOX_COLOR, width=50,
+        self.find_widgets['results_box'] = Listbox(self, bg=self.root.BOX_COLOR, width=35,
                                                    highlightbackground=self.root.BG_COLOR)
-        self.find_widgets['results_box'].grid(row=7, column=1, rowspan=3, sticky=NSEW)
+        self.find_widgets['results_box'].grid(row=7, column=0, rowspan=3,columnspan=2, sticky=NSEW)
+
+        # self.find_widgets['xscroll'] = Scrollbar(self, orient=HORIZONTAL)
+        # self.find_widgets['results_box'].config(xscrollcommand=self.find_widgets['xscroll'].set)
+        # self.find_widgets['xscroll'].config(command=self.find_widgets['results_box'].xview)
+        # self.find_widgets['xscroll'].grid(row=10, column=0, columnspan=2, sticky=NSEW)
+
 
         # Bind method to a Listbox click
         self.find_widgets['results_box'].bind('<<ListboxSelect>>', self.select_customer)
@@ -105,7 +112,7 @@ class MainPanel(Frame):
                                                         text_color=self.root.BUTTONS_TEXT,
                                                         hover_color=self.root.BUTTONS_HOVER)
         self.find_widgets['add_button'].configure(font=self.root.BUTTON_FONT)
-        self.find_widgets['add_button'].grid(row=10, column=1, sticky=NSEW)
+        self.find_widgets['add_button'].grid(row=10, column=0, columnspan=2, sticky=NSEW)
 
     def find_customer(self, event):
         self.root.find_customer(self.get_search_criteria())
@@ -201,9 +208,15 @@ class MainPanel(Frame):
         self.customer_widgets['text_treatments'] = Label(self, text="Процедури на клиента", bg=self.root.BG_COLOR)
         self.customer_widgets['text_treatments'].grid(row=8, column=2, columnspan=2, sticky=NSEW)
 
-        self.customer_widgets['treatments_box'] = Listbox(self, bg=self.root.BOX_COLOR, width=50, height=14,
+        self.customer_widgets['treatments_box'] = Listbox(self, bg=self.root.BOX_COLOR, width=50,
                                                           highlightbackground=self.root.BG_COLOR)
         self.customer_widgets['treatments_box'].grid(row=9, column=2, columnspan=2, sticky=NSEW)
+        self.customer_widgets['treatments_box'].bind('<<ListboxSelect>>', self.select_customer_treatment)
+
+        # self.customer_widgets['xscroll'] = Scrollbar(self, orient=HORIZONTAL, bd=10)
+        # self.customer_widgets['treatments_box'].config(xscrollcommand=self.customer_widgets['xscroll'].set)
+        # self.customer_widgets['xscroll'].config(command=self.customer_widgets['treatments_box'].xview)
+        # self.customer_widgets['xscroll'].grid(row=10, column=2, columnspan=2, sticky = NSEW)
 
         # Edit customer button
         self.customer_widgets['edit_button'] = ctk.CTkButton(self, text="Промяна на клиент",
@@ -256,9 +269,9 @@ class MainPanel(Frame):
         self.calendar_widgets['text'].grid(row=0, column=4, sticky=NSEW)
         # Actual calendar
         self.calendar_widgets['calendar'] = tkcalendar.Calendar(self, selectmode='day', year=date[2], month=date[1],
-                                                                day=date[0], width=50, borderwidth=1,
+                                                                day=date[0], width=45, borderwidth=1,
                                                                 font=self.root.FONT, showweeknumbers=False)
-        self.calendar_widgets['calendar'].grid(row=1, column=4, rowspan=6, columnspan=2, sticky=NSEW)
+        self.calendar_widgets['calendar'].grid(row=1, column=4, rowspan=6, sticky=NSEW)
         self.calendar_widgets['calendar'].bind('<<CalendarSelected>>', self.request_daily_schedule)
         self.calendar_widgets['calendar'].configure(background=self.root.BOX_COLOR)
         self.calendar_widgets['calendar'].configure(headersbackground=self.root.BOX_COLOR)
@@ -269,11 +282,16 @@ class MainPanel(Frame):
         self.calendar_widgets['calendar'].configure(bordercolor=self.root.CALENDAR_BORDERS)
         self.calendar_widgets['calendar'].configure(selectbackground=self.root.CALENDAR_SELECTBG)
         # Daily scehdule box
-        self.calendar_widgets['box'] = Listbox(self, bg=self.root.BOX_COLOR, height=20, width=50,
+        self.calendar_widgets['box'] = Listbox(self, bg=self.root.BOX_COLOR, width=45,
                                                highlightbackground=self.root.BG_COLOR)
-        self.calendar_widgets['box'].grid(column=4, row=7, columnspan=2, rowspan=3, sticky=NSEW)
+        self.calendar_widgets['box'].grid(column=4, row=7, rowspan=3, sticky=NSEW)
         self.calendar_widgets['box'].bind('<<ListboxSelect>>', self.display_treatment_user)
         self.calendar_widgets['box'].bind('<Double-1>', self.select_treatment)
+
+        # self.calendar_widgets['xscroll'] = Scrollbar(self, orient=HORIZONTAL, bd=10)
+        # self.calendar_widgets['box'].config(xscrollcommand=self.calendar_widgets['xscroll'].set)
+        # self.calendar_widgets['xscroll'].config(command=self.calendar_widgets['box'].xview)
+        # self.calendar_widgets['xscroll'].grid(row=10, column=4, sticky=NSEW)
 
         # Show today button
         self.calendar_widgets['show_today_button'] = ctk.CTkButton(self, text='Покажи днес',
@@ -282,7 +300,7 @@ class MainPanel(Frame):
                                                                    text_color=self.root.BUTTONS_TEXT,
                                                                    hover_color=self.root.BUTTONS_HOVER)
         self.calendar_widgets['show_today_button'].configure(font=self.root.BUTTON_FONT)
-        self.calendar_widgets['show_today_button'].grid(row=10, column=4, columnspan=2, sticky=NSEW)
+        self.calendar_widgets['show_today_button'].grid(row=10, column=4, sticky=NSEW)
 
     # TODO - check for redundancy as this is replaced with self.results[index]
     # def get_calendar_box(self, index):
@@ -305,6 +323,12 @@ class MainPanel(Frame):
                 self.double_click_flag = False
         else:
             self.root.display_treatment_user(self.calendar_widgets['box'].curselection()[0])
+
+    def select_customer_treatment(self, event):
+        index = self.customer_widgets['treatments_box'].curselection()[0]
+        data = self.customer_widgets['treatments_box'].get(index)
+        d,m,y = data.split('|')[0].split('.')
+        self.root.display_daily_schedule(date = [int(d),int(m),int(y)+2000])
 
     def show_today(self, today):
         self.root.display_daily_schedule(today)
