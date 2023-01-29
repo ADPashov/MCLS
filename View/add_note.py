@@ -1,4 +1,5 @@
-from tkinter import Toplevel, NSEW, Label, Text, Grid
+from tkinter import Toplevel, NSEW, Label, Text
+
 import customtkinter as ctk
 
 
@@ -23,7 +24,8 @@ class AddNote(Toplevel):
     make_resizable()
         Allows for the widgets in the panel to keep their positions and proportions with screen resizing
 
-     """
+    """
+
     def __init__(self, root, customer_data):
         """
         Constructs the AddNote object and initializes the widgets
@@ -57,7 +59,11 @@ class AddNote(Toplevel):
         """
 
         # Header label
-        main_label = Label(self, text='Добавяне на бележка за ' + self.customer_data, bg=self.root.BG_COLOR)
+        main_label = Label(
+            self,
+            text="Добавяне на бележка за " + self.customer_data,
+            bg=self.root.BG_COLOR,
+        )
         main_label.grid(row=0, column=0, stick=NSEW)
 
         # Note contents box
@@ -65,14 +71,14 @@ class AddNote(Toplevel):
         note_box.grid(row=1, column=0, sticky=NSEW)
 
         # Button
-        note_button = ctk.CTkButton(self, text='Добави бележка',
-                                    command=lambda: self.root.add_note(note_box.get('1.0', 'end-1c')))
+        note_button = ctk.CTkButton(
+            self,
+            text="Добави бележка",
+            command=lambda: self.root.add_note(note_box.get("1.0", "end-1c")),
+        )
         note_button.configure(font=self.root.FONT)
         note_button.grid(row=2, column=0, sticky=NSEW)
 
-
     def destroy(self):
-        self.root.reset_panel_variable('add_note')
+        self.root.reset_panel_variable("add_note")
         Toplevel.destroy(self)
-
-

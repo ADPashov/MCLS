@@ -1,34 +1,44 @@
+import csv
 import datetime as dt
-import time
+import re
 from itertools import groupby
 from operator import itemgetter
 from string import Template
-from threading import Thread
 
 from database import Database
-import re
-import csv
 
 
 class NoUserException(Exception):
-    def __init__(self, message='Не е избран потребител'):
+    def __init__(self, message="Не е избран потребител"):
         super().__init__(message)
 
 
 class NotFreeException(Exception):
-    def __init__(self, message='Избраните ден, час и продължителност не са свободни'):
+    def __init__(self, message="Избраните ден, час и продължителност не са свободни"):
         super().__init__(message)
 
 
 class NoZoneException(Exception):
-    def __init__(self, message='Поне една от зоните е невалидна'):
+    def __init__(self, message="Поне една от зоните е невалидна"):
         super().__init__(message)
 
 
 class Model:
     DAYS = [*range(1, 32)]
-    MONTHS = {1: 'Януари', 2: 'Февруари', 3: 'Март', 4: 'Април', 5: 'Май', 6: 'Юни', 7: 'Юли', 8: 'Август',
-              9: 'Септември', 10: 'Октомври', 11: 'Ноември', 12: 'Декември'}
+    MONTHS = {
+        1: "Януари",
+        2: "Февруари",
+        3: "Март",
+        4: "Април",
+        5: "Май",
+        6: "Юни",
+        7: "Юли",
+        8: "Август",
+        9: "Септември",
+        10: "Октомври",
+        11: "Ноември",
+        12: "Декември",
+    }
     YEARS = [*range(2022, 2030)]
 
     def __init__(self, controller):
@@ -39,13 +49,22 @@ class Model:
         self.current_selected_index = None
         self.current_operator = None
 
-        self.ZONES, self.TIMES, self.PACKAGES, self.DURATIONS, self.OPERATORS, self.NEXT_DAYS = self.read_csvs()
+        (
+            self.ZONES,
+            self.TIMES,
+            self.PACKAGES,
+            self.DURATIONS,
+            self.OPERATORS,
+            self.NEXT_DAYS,
+        ) = self.read_csvs()
 
         self.find_customer_results = None
 
-        self.current_date = [dt.datetime.now().day,
-                             dt.datetime.now().month,
-                             dt.datetime.now().year]
+        self.current_date = [
+            dt.datetime.now().day,
+            dt.datetime.now().month,
+            dt.datetime.now().year,
+        ]
 
         self.daily_ids = []
         self.daily_treatments_ids = []
@@ -65,33 +84,33 @@ class Model:
         operators = []
         next_days = {}
 
-        with open('zones.csv', encoding='utf8') as csvfile:
-            z = csv.reader(csvfile, delimiter=',')
+        with open("zones.csv", encoding="utf8") as csvfile:
+            z = csv.reader(csvfile, delimiter=",")
             for row in z:
                 zones.append(*row)
 
-        with open('times.csv', encoding='utf8') as csvfile:
-            z = csv.reader(csvfile, delimiter=',')
+        with open("times.csv", encoding="utf8") as csvfile:
+            z = csv.reader(csvfile, delimiter=",")
             for row in z:
                 times.append(*row)
 
-        with open('packages.csv', encoding='utf8') as csvfile:
-            z = csv.reader(csvfile, delimiter=',')
+        with open("packages.csv", encoding="utf8") as csvfile:
+            z = csv.reader(csvfile, delimiter=",")
             for row in z:
                 packages[row[0]] = row[1:]
 
-        with open('durations.csv', encoding='utf8') as csvfile:
-            z = csv.reader(csvfile, delimiter=',')
+        with open("durations.csv", encoding="utf8") as csvfile:
+            z = csv.reader(csvfile, delimiter=",")
             for row in z:
                 durations[row[0]] = int(row[1])
 
-        with open('operators.csv', encoding='utf8') as csvfile:
-            z = csv.reader(csvfile, delimiter=',')
+        with open("operators.csv", encoding="utf8") as csvfile:
+            z = csv.reader(csvfile, delimiter=",")
             for row in z:
                 operators.append(*row)
 
-        with open('next_date.csv', encoding='utf8') as csvfile:
-            z = csv.reader(csvfile, delimiter=',')
+        with open("next_date.csv", encoding="utf8") as csvfile:
+            z = csv.reader(csvfile, delimiter=",")
             for row in z:
                 next_days[row[0]] = row[1:]
 
@@ -103,18 +122,18 @@ class Model:
         res = str(date[0])
         match res:
             case 1 | 21 | 31:
-                res += '-ви '
+                res += "-ви "
             case 2 | 22:
-                res += '-ри'
+                res += "-ри"
             case 3 | 4 | 23 | 24:
-                res += '-ти '
+                res += "-ти "
             case 7 | 8 | 27 | 28:
-                res += '-ми '
+                res += "-ми "
             case _:
-                res += '-и '
+                res += "-и "
 
         res += self.MONTHS[int(date[1])]
-        res += ' ' + str(date[2]) + 'г.'
+        res += " " + str(date[2]) + "г."
         return res
 
     def format_daily_sms(self, date):
@@ -123,20 +142,22 @@ class Model:
         for index, entry in enumerate(self.daily_uniques):
             if entry is not None:
                 if entry != prev:
-                    time, zone, name, phone = self.daily_schedule[index].split(' | ')
-                    data.append([phone[1:], name.split(' ')[0], time,[zone]])
+                    time, zone, name, phone = self.daily_schedule[index].split(" | ")
+                    data.append([phone[1:], name.split(" ")[0], time, [zone]])
                 else:
-                    data[entry][3].append(self.daily_schedule[index].split('| ')[1][:-1])
+                    data[entry][3].append(
+                        self.daily_schedule[index].split("| ")[1][:-1]
+                    )
                 prev = entry
 
         for entry in data:
             for key in self.PACKAGES.keys():
                 if set(self.PACKAGES[key]).issubset(set(entry[3])):
-                    new_zones = [x for x in entry[3] if x not in self.PACKAGES[key]] + [key]
+                    new_zones = [x for x in entry[3] if x not in self.PACKAGES[key]] + [
+                        key
+                    ]
                     entry[3] = new_zones
         return data
-
-
 
     def get_current_date(self):
         return self.current_date
@@ -159,7 +180,13 @@ class Model:
         return self.current_customer
 
     def book_treatment(self, duration, zones):
-        self.db.book_treatment(self.current_customer[0], self.current_date, self.current_time, duration, zones)
+        self.db.book_treatment(
+            self.current_customer[0],
+            self.current_date,
+            self.current_time,
+            duration,
+            zones,
+        )
 
     def validate_zones(self, zones):
         for zone in zones:
@@ -191,8 +218,13 @@ class Model:
             raise NotFreeException
 
     def add_new_zone(self, zone):
-        self.db.book_treatment(self.current_customer[0], self.current_date, self.current_time,
-                               self.daily_durations[self.current_selected_index], [zone])
+        self.db.book_treatment(
+            self.current_customer[0],
+            self.current_date,
+            self.current_time,
+            self.daily_durations[self.current_selected_index],
+            [zone],
+        )
 
     def complete_treatments(self, treatment_id, data):
         self.db.complete_treatments(treatment_id, data)
@@ -203,19 +235,26 @@ class Model:
 
     def suggest_next_date(self, zones):
         if len(zones) == 1:
-            string = 'Препоръчанa датa за следващo посещениe: \n'
+            string = "Препоръчанa датa за следващo посещениe: \n"
         else:
-            string = 'Препоръчани дати за следващи посещения: \n'
+            string = "Препоръчани дати за следващи посещения: \n"
 
         for zone in zones:
             for key in self.NEXT_DAYS.keys():
                 bool = zone == self.NEXT_DAYS[key][1]
                 if zone in self.NEXT_DAYS[key]:
-                    next_date = dt.date(day=self.current_date[0], month=self.current_date[1],
-                                        year=self.current_date[2]) + dt.timedelta(days=int(key))
+                    next_date = dt.date(
+                        day=self.current_date[0],
+                        month=self.current_date[1],
+                        year=self.current_date[2],
+                    ) + dt.timedelta(days=int(key))
 
-                    string += 'Зона {} - {} \n'.format(zone, self.date_to_string(
-                        [next_date.day, next_date.month, next_date.year]))
+                    string += "Зона {} - {} \n".format(
+                        zone,
+                        self.date_to_string(
+                            [next_date.day, next_date.month, next_date.year]
+                        ),
+                    )
         return string
 
     def get_notes(self):
@@ -228,16 +267,18 @@ class Model:
 
     def format_customer_treatments(self):
 
-        treatments = [list(treatment) for treatment in sorted(self.get_customer_treatments(), key=lambda x: x[2])]
+        treatments = [
+            list(treatment)
+            for treatment in sorted(self.get_customer_treatments(), key=lambda x: x[2])
+        ]
         res = []
         for item in treatments:
-            entry = Template('$d.$m.$y|$zone').substitute(d=item[0].day,
-                                                                    m=item[0].month,
-                                                                    y=item[0].year-2000,
-                                                                    zone=item[2])
+            entry = Template("$d.$m.$y|$zone").substitute(
+                d=item[0].day, m=item[0].month, y=item[0].year - 2000, zone=item[2]
+            )
             if item.pop():
                 i, hz, j = item[3:6]
-                entry += Template('|I=$i|Hz=$hz|J=$j').substitute(i=i, hz=hz, j=j)
+                entry += Template("|I=$i|Hz=$hz|J=$j").substitute(i=i, hz=hz, j=j)
             res.append(entry)
         return res
 
@@ -255,29 +296,31 @@ class Model:
 
     def validate_customer_data(self, customer_data, field=None):
         match field:
-            case 'fname':
-                return self.validate_customer_name(customer_data, 'fname')
-            case 'lname':
-                return self.validate_customer_name(customer_data, 'lname')
-            case 'phone':
+            case "fname":
+                return self.validate_customer_name(customer_data, "fname")
+            case "lname":
+                return self.validate_customer_name(customer_data, "lname")
+            case "phone":
                 return self.validate_customer_phone(customer_data)
-            case 'skin_type':
+            case "skin_type":
                 return self.validate_customer_skintype(customer_data)
-            case 'mail':
+            case "mail":
                 return self.validate_customer_mail(customer_data)
             case None:
                 fname, lname, phone, skintype, mail = customer_data
-                return [self.validate_customer_name(fname, 'fname'),
-                        self.validate_customer_name(lname, 'lname'),
-                        self.validate_customer_phone(phone),
-                        self.validate_customer_skintype(skintype),
-                        self.validate_customer_mail(mail)]
+                return [
+                    self.validate_customer_name(fname, "fname"),
+                    self.validate_customer_name(lname, "lname"),
+                    self.validate_customer_phone(phone),
+                    self.validate_customer_skintype(skintype),
+                    self.validate_customer_mail(mail),
+                ]
 
     @staticmethod
     def validate_customer_name(name, indicator):
-        pattern = r'^[А-Я][а-я]*$'
+        pattern = r"^[А-Я][а-я]*$"
         # Supporting complex names
-        for x in name.split('-'):
+        for x in name.split("-"):
             if not re.fullmatch(pattern, x):
                 raise ValueError(indicator)
         return name
@@ -285,33 +328,33 @@ class Model:
     @staticmethod
     def validate_customer_phone(phone):
         # phone_pattern_int = r'^\+[1-9]{1}[0-9]{3,14}$'
-        pattern_bg = r'^\+359[0-9]{9}$'
-        if phone != '':
-            if phone[0] == '0':
-                phone = '+359' + phone[1:]
+        pattern_bg = r"^\+359[0-9]{9}$"
+        if phone != "":
+            if phone[0] == "0":
+                phone = "+359" + phone[1:]
 
         # TODO - remove after past data is entered and all customers have phones
-        if phone != '':
+        if phone != "":
             if not re.fullmatch(pattern_bg, phone):
-                raise ValueError('phone')
+                raise ValueError("phone")
         return phone
 
     @staticmethod
     def validate_customer_skintype(skintype):
-        pattern = r'^[1-4]$'
-        if skintype == '':
+        pattern = r"^[1-4]$"
+        if skintype == "":
             skintype = None
         else:
             if not re.fullmatch(pattern, skintype):
-                raise ValueError('skintype')
+                raise ValueError("skintype")
         return skintype
 
     @staticmethod
     def validate_customer_mail(mail):
-        pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-        if mail != '':
+        pattern = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+        if mail != "":
             if not re.fullmatch(pattern, mail):
-                raise ValueError('mail')
+                raise ValueError("mail")
         return mail
 
     def format_daily_scehdule(self, date):
@@ -323,7 +366,7 @@ class Model:
         self.current_date = date
 
         self.current_operator = self.get_operator()
-        result[0] += self.current_operator[0] if self.current_operator else ''
+        result[0] += self.current_operator[0] if self.current_operator else ""
         # data 1 - past, data 2 - future, fillers - [time, id]
         complete = []
         future = []
@@ -334,8 +377,8 @@ class Model:
                 future.append(item[:-1])
 
         # complete, future, fillers = self.get_day(self.current_date)
-        complete = [x + ('complete',) for x in complete]
-        future = [x + ('future',) for x in future]
+        complete = [x + ("complete",) for x in complete]
+        future = [x + ("future",) for x in future]
         # {'13:30': 39, '16:30': 59, '17:00': 60, '17:30': 61}
         # self.fillers = dict(fillers)
 
@@ -345,7 +388,10 @@ class Model:
         #                         ........]]]
         temp2 = [list(res) for res in complete + future]
         temp2.sort(key=itemgetter(1))
-        res = [[k, [[a, b, x, c, d] for x, y, a, b, c, d in z]] for k, z in groupby(temp2, key=itemgetter(1))]
+        res = [
+            [k, [[a, b, x, c, d] for x, y, a, b, c, d in z]]
+            for k, z in groupby(temp2, key=itemgetter(1))
+        ]
         # [['11:00', [['Шия', 1, 83, 1, 'future']]], ['14:30', [['Рамене', 1, 6, 1, 'complete']]],
         # ['16:00', [['Цели ръце', 5, 57, 4, 'future'], ['Цели крака', 5, 58, 4, 'future']]]]
 
@@ -375,7 +421,18 @@ class Model:
                     self.daily_ids[pos] = id
                     self.daily_durations[pos] = duration
                     self.daily_uniques[pos] = counter_uniq
-                    string = '' + time + ' | ' + zone + ' | ' + fname + '  ' + lname + ' | ' + phone
+                    string = (
+                        ""
+                        + time
+                        + " | "
+                        + zone
+                        + " | "
+                        + fname
+                        + "  "
+                        + lname
+                        + " | "
+                        + phone
+                    )
                     result[pos] = string
                     counter += 1
                 else:
@@ -384,7 +441,14 @@ class Model:
                     self.daily_ids.insert(pos + 1, id)
                     self.daily_durations.insert(pos + 1, duration)
                     self.daily_uniques.insert(pos + 1, counter_uniq)
-                    string = '_' * (len(time) - 1) + '| ' + zone + ' | ' + ' ' * len(fname) + ' '
+                    string = (
+                        "_" * (len(time) - 1)
+                        + "| "
+                        + zone
+                        + " | "
+                        + " " * len(fname)
+                        + " "
+                    )
                     times.insert(pos + 1, time)
                     result.insert(pos + 1, string)
                     counter += 1
@@ -406,45 +470,56 @@ class Model:
         entry = self.daily_schedule[real_index]
         index_first = self.daily_uniques.index(self.daily_uniques[real_index])
         self.current_selected_index = index_first
-        if entry[0] == '_':
+        if entry[0] == "_":
             self.current_time = self.daily_schedule[index_first][0:5]
         else:
             self.current_time = entry[0:5]
 
         # Book
         if len(entry) == 5:
-            return 'book_treatment', [self.get_current_customer_name()]
+            return "book_treatment", [self.get_current_customer_name()]
             # if self.current_customer:
             # else:
             #     raise NoUserException
 
-        if entry[:8] == 'Оператор':
-            return 'operator', None
+        if entry[:8] == "Оператор":
+            return "operator", None
 
-        _, zone, name, _ = self.daily_schedule[index_first].split('|')
+        _, zone, name, _ = self.daily_schedule[index_first].split("|")
 
         # Edit single
         # TODO - edit if shit works with current_selected_index
-        if self.daily_treatments_ids[index_first][1] == 'future' and self.is_single(index_first):
-            treatment_data = [self.daily_treatments_ids[index_first][0], zone[1:-1], self.daily_durations[index_first]]
+        if self.daily_treatments_ids[index_first][1] == "future" and self.is_single(
+            index_first
+        ):
+            treatment_data = [
+                self.daily_treatments_ids[index_first][0],
+                zone[1:-1],
+                self.daily_durations[index_first],
+            ]
 
-            return 'edit_treatment', [name, treatment_data]
-
+            return "edit_treatment", [name, treatment_data]
 
         # Edit multi
-        elif self.daily_treatments_ids[index_first][1] == 'future' and not self.is_single(index_first):
+        elif self.daily_treatments_ids[index_first][
+            1
+        ] == "future" and not self.is_single(index_first):
             treatment_ids = []
             treatment_zones = []
             for i in range(0, len(self.daily_uniques)):
                 if self.daily_uniques[i] == self.daily_uniques[index_first]:
                     treatment_id = self.daily_treatments_ids[i][0]
-                    treatment_zone = self.daily_schedule[i].split('|')[1][1:-1]
+                    treatment_zone = self.daily_schedule[i].split("|")[1][1:-1]
                     treatment_ids.append(treatment_id)
                     treatment_zones.append(treatment_zone)
 
             # TODO - see if index_first needs passing or can be omitted
-            return 'edit_multi', [name, treatment_ids, treatment_zones,
-                                  self.daily_durations[index_first]]
+            return "edit_multi", [
+                name,
+                treatment_ids,
+                treatment_zones,
+                self.daily_durations[index_first],
+            ]
 
         # Edit complete
         else:
@@ -452,8 +527,11 @@ class Model:
             self.current_selected_index = real_index
             # TODO - make it more readable
             treatment_data = list(
-                self.get_complete_treatment_data(self.daily_treatments_ids[real_index][0]))
-            return 'edit_complete', [name, treatment_data]
+                self.get_complete_treatment_data(
+                    self.daily_treatments_ids[real_index][0]
+                )
+            )
+            return "edit_complete", [name, treatment_data]
 
     def get_daily_customer_id(self, index):
         if self.current_customer or self.daily_ids[index]:
@@ -462,7 +540,9 @@ class Model:
             raise NoUserException
 
     def is_single(self, index):
-        return False if self.daily_uniques.count(self.daily_uniques[index]) > 1 else True
+        return (
+            False if self.daily_uniques.count(self.daily_uniques[index]) > 1 else True
+        )
 
     def are_fillers(self, index):
         num_fillers = self.daily_durations[index] - 1
@@ -488,12 +568,14 @@ class Model:
 
     def get_current_customer_name(self):
         if self.current_customer:
-            return self.current_customer[1] + ' ' + self.current_customer[2]
+            return self.current_customer[1] + " " + self.current_customer[2]
         else:
             raise NoUserException
 
     def edit_complete_treatment(self, params):
-        self.db.edit_complete_treatment(self.daily_treatments_ids[self.current_selected_index][0], *params)
+        self.db.edit_complete_treatment(
+            self.daily_treatments_ids[self.current_selected_index][0], *params
+        )
 
     def edit_customer(self, params):
         self.db.edit_customer(self.current_customer[0], *params)
@@ -506,7 +588,9 @@ class Model:
     def edit_treatments(self, params):
         treatment_ids_list, zones, date, time, duration = params
         self.delete_treatments(treatment_ids_list)
-        self.db.book_treatment(self.daily_ids[self.current_selected_index], date, time, duration, zones)
+        self.db.book_treatment(
+            self.daily_ids[self.current_selected_index], date, time, duration, zones
+        )
 
     def set_operator(self, operator):
         if self.current_operator:

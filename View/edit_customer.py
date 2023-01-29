@@ -1,4 +1,5 @@
-from tkinter import Toplevel, Grid, Label, Entry, NSEW
+from tkinter import Toplevel, Label, Entry, NSEW
+
 import customtkinter as ctk
 
 
@@ -36,7 +37,7 @@ class EditCustomer(Toplevel):
         ----------
         root: tkinter.Tk
             See class description
-            
+
         customer_data: list
             See class description
         """
@@ -63,7 +64,11 @@ class EditCustomer(Toplevel):
         """
 
         # Header label
-        main_label = Label(self, text="Промяна на клиент номер " + str(self.customer_data[0]), bg=self.root.BG_COLOR)
+        main_label = Label(
+            self,
+            text="Промяна на клиент номер " + str(self.customer_data[0]),
+            bg=self.root.BG_COLOR,
+        )
         main_label.grid(row=0, column=0, columnspan=3, sticky=NSEW)
 
         # First name
@@ -74,9 +79,11 @@ class EditCustomer(Toplevel):
         new_fname_box.insert(0, self.customer_data[1])
         new_fname_box.grid(row=1, column=1, sticky=NSEW)
 
-        fname_button = ctk.CTkButton(self, text='Промени първо име',
-                                     command=lambda: self.root.edit_customer('fname',
-                                                                             new_fname_box.get()))
+        fname_button = ctk.CTkButton(
+            self,
+            text="Промени първо име",
+            command=lambda: self.root.edit_customer("fname", new_fname_box.get()),
+        )
         fname_button.configure(font=self.root.FONT)
         fname_button.grid(row=1, column=2, sticky=NSEW)
 
@@ -88,9 +95,11 @@ class EditCustomer(Toplevel):
         new_lname_box.insert(0, self.customer_data[2])
         new_lname_box.grid(row=2, column=1, sticky=NSEW)
 
-        lname_button = ctk.CTkButton(self, text='Промени Фамилия',
-                                     command=lambda: self.root.edit_customer('lname',
-                                                                             new_lname_box.get()))
+        lname_button = ctk.CTkButton(
+            self,
+            text="Промени Фамилия",
+            command=lambda: self.root.edit_customer("lname", new_lname_box.get()),
+        )
         lname_button.configure(font=self.root.FONT)
         lname_button.grid(row=2, column=2, sticky=NSEW)
 
@@ -102,23 +111,29 @@ class EditCustomer(Toplevel):
         new_phone_box.insert(0, str(self.customer_data[3]))
         new_phone_box.grid(row=3, column=1, sticky=NSEW)
 
-        phone_button = ctk.CTkButton(self, text='Промени телефон',
-                                     command=lambda: self.root.edit_customer('phone',
-                                                                             new_phone_box.get()))
+        phone_button = ctk.CTkButton(
+            self,
+            text="Промени телефон",
+            command=lambda: self.root.edit_customer("phone", new_phone_box.get()),
+        )
         phone_button.configure(font=self.root.FONT)
         phone_button.grid(row=3, column=2, sticky=NSEW)
 
         # Skin type
-        skintype_label = Label(self, text='Фототип кожа', bg=self.root.BG_COLOR)
+        skintype_label = Label(self, text="Фототип кожа", bg=self.root.BG_COLOR)
         skintype_label.grid(row=4, column=0, sticky=NSEW)
 
         new_skintype_box = Entry(self, bg=self.root.BOX_COLOR)
         new_skintype_box.insert(0, str(self.customer_data[4]))
         new_skintype_box.grid(row=4, column=1, sticky=NSEW)
 
-        skintype_button = ctk.CTkButton(self, text='Промени фототип',
-                                        command=lambda: self.root.edit_customer('skin_type',
-                                                                                new_skintype_box.get()))
+        skintype_button = ctk.CTkButton(
+            self,
+            text="Промени фототип",
+            command=lambda: self.root.edit_customer(
+                "skin_type", new_skintype_box.get()
+            ),
+        )
         skintype_button.configure(font=self.root.FONT)
         skintype_button.grid(row=4, column=2, sticky=NSEW)
 
@@ -130,12 +145,14 @@ class EditCustomer(Toplevel):
         new_mail_box.insert(0, self.customer_data[5])
         new_mail_box.grid(row=5, column=1, sticky=NSEW)
 
-        mail_button = ctk.CTkButton(self, text='Промени имейл',
-                                    command=lambda: self.root.edit_customer('mail',
-                                                                            new_mail_box.get()))
+        mail_button = ctk.CTkButton(
+            self,
+            text="Промени имейл",
+            command=lambda: self.root.edit_customer("mail", new_mail_box.get()),
+        )
         mail_button.configure(font=self.root.FONT)
         mail_button.grid(row=5, column=2, sticky=NSEW)
 
     def destroy(self):
-        self.root.reset_panel_variable('edit_customer')
+        self.root.reset_panel_variable("edit_customer")
         Toplevel.destroy(self)

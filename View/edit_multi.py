@@ -1,4 +1,5 @@
 from tkinter import Toplevel, NSEW, StringVar, OptionMenu, Label, Grid
+
 import customtkinter as ctk
 
 
@@ -111,23 +112,31 @@ class EditMulti(Toplevel):
         """
 
         # Header Label
-        main_label = Label(self, text='Промяна на резервация за няколко зони', bg=self.root.BG_COLOR)
+        main_label = Label(
+            self, text="Промяна на резервация за няколко зони", bg=self.root.BG_COLOR
+        )
         main_label.grid(row=0, column=0, columnspan=6, sticky=NSEW)
 
         # Info labels for name, date, time, duration and zone count
-        name_label = Label(self, text='Клиент: ' + self.customer_data, bg=self.root.BG_COLOR)
+        name_label = Label(
+            self, text="Клиент: " + self.customer_data, bg=self.root.BG_COLOR
+        )
         name_label.grid(row=1, column=0, sticky=NSEW)
 
-        date_label = Label(self, text='Дата: ', bg=self.root.BG_COLOR)
+        date_label = Label(self, text="Дата: ", bg=self.root.BG_COLOR)
         date_label.grid(row=1, column=1, columnspan=3, sticky=NSEW)
 
-        time_label = Label(self, text='Час: ', bg=self.root.BG_COLOR)
+        time_label = Label(self, text="Час: ", bg=self.root.BG_COLOR)
         time_label.grid(row=1, column=4, sticky=NSEW)
 
-        duration_label = Label(self, text='Продължителност: ', bg=self.root.BG_COLOR)
+        duration_label = Label(self, text="Продължителност: ", bg=self.root.BG_COLOR)
         duration_label.grid(row=1, column=5, sticky=NSEW)
 
-        count_label = Label(self, text='Брой зони: ' + str(len(self.treatment_ids)), bg=self.root.BG_COLOR)
+        count_label = Label(
+            self,
+            text="Брой зони: " + str(len(self.treatment_ids)),
+            bg=self.root.BG_COLOR,
+        )
         count_label.grid(row=2, column=0, sticky=NSEW)
 
         # Widgets for editing all treatments simultaneously
@@ -137,7 +146,7 @@ class EditMulti(Toplevel):
         day_string.set(self.date[0])
         new_day = OptionMenu(self, day_string, *self.root.DAYS)
         new_day.configure(bg=self.root.BOX_COLOR)
-        new_day['menu'].configure(bg=self.root.BOX_COLOR)
+        new_day["menu"].configure(bg=self.root.BOX_COLOR)
         new_day.grid(row=2, column=1, sticky=NSEW)
 
         # Month
@@ -145,7 +154,7 @@ class EditMulti(Toplevel):
         month_string.set(self.root.MONTHS[self.date[1]])
         new_month = OptionMenu(self, month_string, *self.root.MONTHS.values())
         new_month.configure(bg=self.root.BOX_COLOR)
-        new_month['menu'].configure(bg=self.root.BOX_COLOR)
+        new_month["menu"].configure(bg=self.root.BOX_COLOR)
         new_month.grid(row=2, column=2, sticky=NSEW)
 
         # Year
@@ -153,7 +162,7 @@ class EditMulti(Toplevel):
         year_string.set(self.date[2])
         new_year = OptionMenu(self, year_string, *self.root.YEARS)
         new_year.configure(bg=self.root.BOX_COLOR)
-        new_year['menu'].configure(bg=self.root.BOX_COLOR)
+        new_year["menu"].configure(bg=self.root.BOX_COLOR)
         new_year.grid(row=2, column=3, sticky=NSEW)
 
         # Time
@@ -161,7 +170,7 @@ class EditMulti(Toplevel):
         time_string.set(self.time)
         new_time = OptionMenu(self, time_string, *self.root.TIMES[1:])
         new_time.configure(bg=self.root.BOX_COLOR)
-        new_time['menu'].configure(bg=self.root.BOX_COLOR)
+        new_time["menu"].configure(bg=self.root.BOX_COLOR)
         new_time.grid(row=2, column=4, sticky=NSEW)
 
         # Duration
@@ -169,54 +178,75 @@ class EditMulti(Toplevel):
         duration_string.set(list(self.root.DURATIONS.keys())[self.duration - 1])
         new_duration = OptionMenu(self, duration_string, *self.root.DURATIONS.keys())
         new_duration.configure(bg=self.root.BOX_COLOR)
-        new_duration['menu'].configure(bg=self.root.BOX_COLOR)
+        new_duration["menu"].configure(bg=self.root.BOX_COLOR)
         new_duration.grid(row=2, column=5, sticky=NSEW)
 
         # Complete button
-        complete_all_button = ctk.CTkButton(self, text='Завършване на всички процедури',
-                                            command=lambda: self.root.show_panel('complete_treatment',
-                                                                                 [self.customer_data,
-                                                                                  [self.treatment_ids,
-                                                                                   self.treatment_zones]]))
+        complete_all_button = ctk.CTkButton(
+            self,
+            text="Завършване на всички процедури",
+            command=lambda: self.root.show_panel(
+                "complete_treatment",
+                [self.customer_data, [self.treatment_ids, self.treatment_zones]],
+            ),
+        )
 
         complete_all_button.configure(font=self.root.FONT)
         complete_all_button.grid(row=3, column=0, sticky=NSEW)
 
         # Delete button
-        delete_all_button = ctk.CTkButton(self, text='Изтриване на всички процедури',
-                                          command=lambda: self.root.delete_treatments(self.treatment_ids))
+        delete_all_button = ctk.CTkButton(
+            self,
+            text="Изтриване на всички процедури",
+            command=lambda: self.root.delete_treatments(self.treatment_ids),
+        )
         delete_all_button.configure(font=self.root.FONT)
         delete_all_button.grid(row=3, column=1, columnspan=3, sticky=NSEW)
 
         # Change button
-        change_all_button = ctk.CTkButton(self, text='Преместване на всички процедури',
-                                          command=lambda: self.root.edit_treatments([self.treatment_ids,
-                                                                                     self.treatment_zones,
-                                                                                     [day_string.get(),
-                                                                                      [k for k, v in
-                                                                                       self.root.MONTHS.items()
-                                                                                       if v == month_string.get()][0],
-                                                                                      year_string.get()],
-                                                                                     time_string.get(),
-                                                                                     self.root.DURATIONS[
-                                                                                         duration_string.get()]]))
+        change_all_button = ctk.CTkButton(
+            self,
+            text="Преместване на всички процедури",
+            command=lambda: self.root.edit_treatments(
+                [
+                    self.treatment_ids,
+                    self.treatment_zones,
+                    [
+                        day_string.get(),
+                        [
+                            k
+                            for k, v in self.root.MONTHS.items()
+                            if v == month_string.get()
+                        ][0],
+                        year_string.get(),
+                    ],
+                    time_string.get(),
+                    self.root.DURATIONS[duration_string.get()],
+                ]
+            ),
+        )
 
         change_all_button.configure(font=self.root.FONT)
         change_all_button.grid(row=3, column=4, columnspan=2, sticky=NSEW)
 
-        new_zone_label = Label(self, text='Добавяне на нова зона', bg=self.root.BG_COLOR)
+        new_zone_label = Label(
+            self, text="Добавяне на нова зона", bg=self.root.BG_COLOR
+        )
         new_zone_label.grid(row=4, column=0, sticky=NSEW)
 
         # Add new zone
         new_zone_string = StringVar(self)
-        new_zone_string.set('Избор')
+        new_zone_string.set("Избор")
         new_zone = OptionMenu(self, new_zone_string, *self.root.ZONES)
         new_zone.configure(bg=self.root.BOX_COLOR)
-        new_zone['menu'].configure(bg=self.root.BOX_COLOR)
+        new_zone["menu"].configure(bg=self.root.BOX_COLOR)
         new_zone.grid(row=4, column=1, columnspan=3, sticky=NSEW)
 
-        new_zone_button = ctk.CTkButton(self, text='Добавяне на нова зона',
-                                        command=lambda: self.root.add_new_zone(new_zone_string.get()))
+        new_zone_button = ctk.CTkButton(
+            self,
+            text="Добавяне на нова зона",
+            command=lambda: self.root.add_new_zone(new_zone_string.get()),
+        )
         new_zone_button.configure(font=self.root.FONT)
         new_zone_button.grid(row=4, column=4, columnspan=2, sticky=NSEW)
 
@@ -269,14 +299,19 @@ class EditMulti(Toplevel):
 
         # Iterating over all tuples in the treatments list while keeping track of index
         for i in range(0, len(self.treatment_ids)):
-            empty_labels.append(Label(self, text='', bg=self.root.BG_COLOR))
+            empty_labels.append(Label(self, text="", bg=self.root.BG_COLOR))
             empty_labels[i].grid(row=Grid.size(self)[1], column=0)
 
             _, curr_rows = Grid.size(self)
 
             # Zone label
             zone_labels.append(
-                Label(self, text=' Зона ' + str(i + 1) + ': ' + self.treatment_zones[i], bg=self.root.BG_COLOR))
+                Label(
+                    self,
+                    text=" Зона " + str(i + 1) + ": " + self.treatment_zones[i],
+                    bg=self.root.BG_COLOR,
+                )
+            )
             zone_labels[i].grid(row=curr_rows, column=0, sticky=NSEW)
 
             # Day
@@ -284,15 +319,17 @@ class EditMulti(Toplevel):
             day_strings[i].set(self.date[0])
             day_menus.append(OptionMenu(self, day_strings[i], *self.root.DAYS))
             day_menus[i].configure(bg=self.root.BOX_COLOR)
-            day_menus[i]['menu'].configure(bg=self.root.BOX_COLOR)
+            day_menus[i]["menu"].configure(bg=self.root.BOX_COLOR)
             day_menus[i].grid(row=curr_rows, column=1, sticky=NSEW)
 
             # Month
             month_strings.append(StringVar(self))
             month_strings[i].set(self.root.MONTHS[self.date[1]])
-            month_menus.append(OptionMenu(self, month_strings[i], *self.root.MONTHS.values()))
+            month_menus.append(
+                OptionMenu(self, month_strings[i], *self.root.MONTHS.values())
+            )
             month_menus[i].configure(bg=self.root.BOX_COLOR)
-            month_menus[i]['menu'].configure(bg=self.root.BOX_COLOR)
+            month_menus[i]["menu"].configure(bg=self.root.BOX_COLOR)
             month_menus[i].grid(row=curr_rows, column=2, sticky=NSEW)
 
             # Year
@@ -300,7 +337,7 @@ class EditMulti(Toplevel):
             year_strings[i].set(self.date[2])
             year_menus.append(OptionMenu(self, year_strings[i], *self.root.YEARS))
             year_menus[i].configure(bg=self.root.BOX_COLOR)
-            year_menus[i]['menu'].configure(bg=self.root.BOX_COLOR)
+            year_menus[i]["menu"].configure(bg=self.root.BOX_COLOR)
             year_menus[i].grid(row=curr_rows, column=3, sticky=NSEW)
 
             # Time
@@ -308,41 +345,66 @@ class EditMulti(Toplevel):
             time_strings[i].set(self.time)
             time_menus.append(OptionMenu(self, time_strings[i], *self.root.TIMES[1:]))
             time_menus[i].configure(bg=self.root.BOX_COLOR)
-            time_menus[i]['menu'].configure(bg=self.root.BOX_COLOR)
+            time_menus[i]["menu"].configure(bg=self.root.BOX_COLOR)
             time_menus[i].grid(row=curr_rows, column=4, sticky=NSEW)
 
             # Duration
             duration_strings.append(StringVar(self))
             duration_strings[i].set(list(self.root.DURATIONS.keys())[self.duration - 1])
-            duration_menus.append(OptionMenu(self, duration_strings[i], *self.root.DURATIONS.keys()))
+            duration_menus.append(
+                OptionMenu(self, duration_strings[i], *self.root.DURATIONS.keys())
+            )
             duration_menus[i].configure(bg=self.root.BOX_COLOR)
-            duration_menus[i]['menu'].configure(bg=self.root.BOX_COLOR)
+            duration_menus[i]["menu"].configure(bg=self.root.BOX_COLOR)
             duration_menus[i].grid(row=curr_rows, column=5, sticky=NSEW)
 
             # Move button
             # By using lambda c=i, when the button action is invoked the right corresponding index is used
             # otherwise, i takes the value of its last iteration and everything acts as if the last row buttons are used
             buttons_move.append(
-                ctk.CTkButton(self, text='Премести зона ' + self.treatment_zones[i] + ' като нова резервация',
-                              command=lambda c=i: self.root.edit_treatments([[self.treatment_ids[c]],
-                                                                             [self.treatment_zones[c]],
-                                                                             [day_strings[c].get(),
-                                                                              [k for k, v in self.root.MONTHS.items() if
-                                                                               v == month_strings[c].get()][0],
-                                                                              year_strings[c].get()],
-                                                                             time_strings[c].get(), self.root.DURATIONS[
-                                                                                 duration_strings[c].get()]])))
+                ctk.CTkButton(
+                    self,
+                    text="Премести зона "
+                    + self.treatment_zones[i]
+                    + " като нова резервация",
+                    command=lambda c=i: self.root.edit_treatments(
+                        [
+                            [self.treatment_ids[c]],
+                            [self.treatment_zones[c]],
+                            [
+                                day_strings[c].get(),
+                                [
+                                    k
+                                    for k, v in self.root.MONTHS.items()
+                                    if v == month_strings[c].get()
+                                ][0],
+                                year_strings[c].get(),
+                            ],
+                            time_strings[c].get(),
+                            self.root.DURATIONS[duration_strings[c].get()],
+                        ]
+                    ),
+                )
+            )
 
             buttons_move[i].configure(font=self.root.FONT)
             buttons_move[i].grid(row=curr_rows + 1, column=1, columnspan=3, sticky=NSEW)
 
             # Delete button
-            buttons_delete.append(ctk.CTkButton(self, text='Изтрий зона ' + self.treatment_zones[i],
-                                                command=lambda z=i: self.root.delete_treatments(
-                                                    [self.treatment_ids[z]])))  # ids[z], date,index_first)))
+            buttons_delete.append(
+                ctk.CTkButton(
+                    self,
+                    text="Изтрий зона " + self.treatment_zones[i],
+                    command=lambda z=i: self.root.delete_treatments(
+                        [self.treatment_ids[z]]
+                    ),
+                )
+            )  # ids[z], date,index_first)))
             buttons_delete[i].configure(font=self.root.FONT)
-            buttons_delete[i].grid(row=curr_rows + 1, column=4, columnspan=2, sticky=NSEW)
+            buttons_delete[i].grid(
+                row=curr_rows + 1, column=4, columnspan=2, sticky=NSEW
+            )
 
     def destroy(self):
-        self.root.reset_panel_variable('edit_multi')
+        self.root.reset_panel_variable("edit_multi")
         Toplevel.destroy(self)

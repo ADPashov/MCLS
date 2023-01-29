@@ -1,4 +1,5 @@
-from tkinter import Toplevel, Grid, Label, NSEW, StringVar, OptionMenu
+from tkinter import Toplevel, Label, NSEW, StringVar, OptionMenu
+
 import customtkinter as ctk
 
 
@@ -102,39 +103,54 @@ class BookTreatment(Toplevel):
         """
 
         # Header label
-        main_label = Label(self,
-                           text="Запазване на час за " + self.customer_data,
-                           bg=self.root.BG_COLOR)
+        main_label = Label(
+            self,
+            text="Запазване на час за " + self.customer_data,
+            bg=self.root.BG_COLOR,
+        )
         main_label.grid(row=0, column=0, columnspan=3, sticky=NSEW)
 
         # Label informing the user which date and time are chosen
-        data_label = Label(self, text=self.root.get_date_string() + ', ' + self.root.get_current_time() + 'ч.',
-                           bg=self.root.BG_COLOR)
+        data_label = Label(
+            self,
+            text=self.root.get_date_string()
+            + ", "
+            + self.root.get_current_time()
+            + "ч.",
+            bg=self.root.BG_COLOR,
+        )
         data_label.grid(row=1, column=0, columnspan=3, sticky=NSEW)
 
         # Duration label and option menu
-        duration_label = Label(self, text='Продължителност: ', bg=self.root.BG_COLOR)
+        duration_label = Label(self, text="Продължителност: ", bg=self.root.BG_COLOR)
         duration_label.grid(row=2, column=0, sticky=NSEW)
 
         duration_string = StringVar(self)
         duration_string.set(list(self.root.DURATIONS.keys())[1])
-        duration_chooser = OptionMenu(self, duration_string, *list(self.root.DURATIONS.keys()))
-        duration_chooser.configure(bg='#FF69B4')
-        duration_chooser['menu'].configure(bg=self.root.BOX_COLOR)
+        duration_chooser = OptionMenu(
+            self, duration_string, *list(self.root.DURATIONS.keys())
+        )
+        duration_chooser.configure(bg="#FF69B4")
+        duration_chooser["menu"].configure(bg=self.root.BOX_COLOR)
         duration_chooser.grid(row=2, column=1, sticky=NSEW)
 
         # Button for adding the needed widgets for adding additional zones
-        add_button = ctk.CTkButton(self, text='Добави зона', command=lambda: self.add_zone())
+        add_button = ctk.CTkButton(
+            self, text="Добави зона", command=lambda: self.add_zone()
+        )
         add_button.configure(font=self.root.FONT)
         add_button.grid(row=2, column=2, sticky=NSEW)
 
         # Main action button
         # Instance variable as it needs to be accessed by the add_zone() method which moves its position
         # IMO, setting it to None in __init__() would not contribute to readability
-        self.book_button = ctk.CTkButton(self, text='Запази Час',
-                                         command=lambda: self.root.book_treatment(self.root.DURATIONS[
-                                                                                      duration_string.get()],
-                                                                                  self.get_zones()))
+        self.book_button = ctk.CTkButton(
+            self,
+            text="Запази Час",
+            command=lambda: self.root.book_treatment(
+                self.root.DURATIONS[duration_string.get()], self.get_zones()
+            ),
+        )
         self.book_button.configure(font=self.root.FONT)
         self.book_button.grid(row=4, column=0, columnspan=3, sticky=NSEW)
         self.add_zone()
@@ -174,15 +190,21 @@ class BookTreatment(Toplevel):
         self.book_button.grid(row=self.counter + 4, column=0, columnspan=3, sticky=NSEW)
 
         # New label
-        self.labels.append(Label(self, text='Зона: ', bg=self.root.BG_COLOR))
+        self.labels.append(Label(self, text="Зона: ", bg=self.root.BG_COLOR))
         self.labels[self.counter].grid(row=self.counter + 3, column=0)
 
         # Create and place new StringVar and OptionMenu
         self.string_vars.append(StringVar(self))
-        self.string_vars[self.counter].set('Избор')
-        self.menus.append(OptionMenu(self, self.string_vars[self.counter], *(self.root.ZONES+list(self.root.PACKAGES.keys()))))
+        self.string_vars[self.counter].set("Избор")
+        self.menus.append(
+            OptionMenu(
+                self,
+                self.string_vars[self.counter],
+                *(self.root.ZONES + list(self.root.PACKAGES.keys()))
+            )
+        )
         self.menus[self.counter].configure(bg=self.root.BOX_COLOR)
-        self.menus[self.counter]['menu'].configure(bg=self.root.BOX_COLOR)
+        self.menus[self.counter]["menu"].configure(bg=self.root.BOX_COLOR)
         self.menus[self.counter].grid(row=self.counter + 3, column=1, sticky=NSEW)
 
         # Ensure the panes is resizable with the new widgets
@@ -192,5 +214,5 @@ class BookTreatment(Toplevel):
         self.counter += 1
 
     def destroy(self):
-        self.root.reset_panel_variable('book_treatment')
+        self.root.reset_panel_variable("book_treatment")
         Toplevel.destroy(self)

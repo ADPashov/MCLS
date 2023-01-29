@@ -1,4 +1,5 @@
 from tkinter import Toplevel, NSEW, Label, Entry, Grid
+
 import customtkinter as ctk
 
 
@@ -74,8 +75,11 @@ class CompleteTreatment(Toplevel):
         # main_label.grid(row=0, column=0, columnspan=2, sticky=NSEW)
 
         # Header label
-        main_label = Label(self,
-                           text='Завършване на процедура на ' + self.customer_data, bg=self.root.BG_COLOR)
+        main_label = Label(
+            self,
+            text="Завършване на процедура на " + self.customer_data,
+            bg=self.root.BG_COLOR,
+        )
         main_label.grid(row=0, column=0, columnspan=2, sticky=NSEW)
 
         zone_labels = []
@@ -90,33 +94,45 @@ class CompleteTreatment(Toplevel):
         j_boxes = []
 
         for i in range(len(self.treatment_data[0])):
-            zone_labels.append(Label(self, text='Зона: ' + self.treatment_data[1][i], bg=self.root.BG_COLOR))
-            zone_labels[i].grid(row=Grid.size(self)[1], column=0, columnspan=2, sticky=NSEW)
+            zone_labels.append(
+                Label(
+                    self,
+                    text="Зона: " + self.treatment_data[1][i],
+                    bg=self.root.BG_COLOR,
+                )
+            )
+            zone_labels[i].grid(
+                row=Grid.size(self)[1], column=0, columnspan=2, sticky=NSEW
+            )
 
             # Impulse widgets
-            i_labels.append(Label(self, text='Импулси:', bg=self.root.BG_COLOR))
+            i_labels.append(Label(self, text="Импулси:", bg=self.root.BG_COLOR))
             i_labels[i].grid(row=Grid.size(self)[1], column=0, sticky=NSEW)
 
             i_boxes.append(Entry(self, width=10, bg=self.root.BOX_COLOR))
             i_boxes[i].grid(row=Grid.size(self)[1] - 1, column=1, sticky=NSEW)
 
             # Frequency widgets
-            hz_labels.append(Label(self, text='Честота(Hz):', bg=self.root.BG_COLOR))
+            hz_labels.append(Label(self, text="Честота(Hz):", bg=self.root.BG_COLOR))
             hz_labels[i].grid(row=Grid.size(self)[1], column=0, sticky=NSEW)
 
             hz_boxes.append(Entry(self, width=10, bg=self.root.BOX_COLOR))
             hz_boxes[i].grid(row=Grid.size(self)[1] - 1, column=1, sticky=NSEW)
 
             # Energy widgets
-            j_labels.append(Label(self, text='Джаули(J):', bg=self.root.BG_COLOR))
+            j_labels.append(Label(self, text="Джаули(J):", bg=self.root.BG_COLOR))
             j_labels[i].grid(row=Grid.size(self)[1], column=0, sticky=NSEW)
 
             j_boxes.append(Entry(self, width=10, bg=self.root.BOX_COLOR))
             j_boxes[i].grid(row=Grid.size(self)[1] - 1, column=1, sticky=NSEW)
 
-        complete_button = ctk.CTkButton(self, text='Завърши Процедурата', command=lambda: button_action())
+        complete_button = ctk.CTkButton(
+            self, text="Завърши Процедурата", command=lambda: button_action()
+        )
         complete_button.configure(font=self.root.FONT)
-        complete_button.grid(row=Grid.size(self)[1], column=0, columnspan=2, sticky=NSEW)
+        complete_button.grid(
+            row=Grid.size(self)[1], column=0, columnspan=2, sticky=NSEW
+        )
 
         def button_action():
 
@@ -124,11 +140,13 @@ class CompleteTreatment(Toplevel):
             for i in range(len(self.treatment_data[0])):
                 data.append([i_boxes[i].get(), hz_boxes[i].get(), j_boxes[i].get()])
                 # data.append([i_boxes[i].get(), hz_boxes[i].get(), j_boxes[i].get()])
-            self.root.complete_treatments(self.treatment_data[0], data, self.treatment_data[1])
+            self.root.complete_treatments(
+                self.treatment_data[0], data, self.treatment_data[1]
+            )
 
         # Bind the complete button functionality also to the Enter key
-        self.root.bind('<Return>', button_action)
+        self.root.bind("<Return>", button_action)
 
     def destroy(self):
-        self.root.reset_panel_variable('complete_treatment')
+        self.root.reset_panel_variable("complete_treatment")
         Toplevel.destroy(self)

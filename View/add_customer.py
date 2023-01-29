@@ -1,5 +1,5 @@
-import tkinter
-from tkinter import Toplevel, Label, Entry, Grid, NSEW
+from tkinter import Toplevel, Label, Entry, NSEW
+
 import customtkinter as ctk
 
 
@@ -73,7 +73,7 @@ class AddCustomer(Toplevel):
         phone_box.grid(row=3, column=1, sticky=NSEW)
 
         # Skin type
-        skintype_label = Label(self, text='Фототип кожа', bg=self.root.BG_COLOR)
+        skintype_label = Label(self, text="Фототип кожа", bg=self.root.BG_COLOR)
         skintype_label.grid(row=4, column=0, sticky=NSEW)
         skintype_box = Entry(self, bg=self.root.BOX_COLOR)
         skintype_box.grid(row=4, column=1, sticky=NSEW)
@@ -85,15 +85,22 @@ class AddCustomer(Toplevel):
         mail_box.grid(row=5, column=1, sticky=NSEW)
 
         # Add customer action Button
-        add_button = ctk.CTkButton(self, text='Добави Клиент',
-                                   command=lambda: self.root.add_customer([fname_box.get(),
-                                                                           lname_box.get(),
-                                                                           phone_box.get(),
-                                                                           skintype_box.get(),
-                                                                           mail_box.get()]))
+        add_button = ctk.CTkButton(
+            self,
+            text="Добави Клиент",
+            command=lambda: self.root.add_customer(
+                [
+                    fname_box.get(),
+                    lname_box.get(),
+                    phone_box.get(),
+                    skintype_box.get(),
+                    mail_box.get(),
+                ]
+            ),
+        )
         add_button.configure(font=self.root.FONT)
         add_button.grid(row=6, column=0, columnspan=2, sticky=NSEW)
 
     def destroy(self):
-        self.root.reset_panel_variable('add_customer')
+        self.root.reset_panel_variable("add_customer")
         Toplevel.destroy(self)

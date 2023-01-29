@@ -1,9 +1,7 @@
-import sqlite3 as sq
-
 import psycopg2
 import psycopg2 as pg
+
 # from configparser import ConfigParser
-import os
 
 
 # ALTER SEQUENCE customers_customer_id_seq RESTART WITH 2;
@@ -18,11 +16,13 @@ class Database:
 
     def init_connection(self):
         # self.connection = pg.connect(**self.configs())
-        self.connection = pg.connect(host = 'db.bit.io',
-                                     database = 'pashovv/MCLS',
-                                     user = 'pashovv',
-                                     password = 'v2_3y7vQ_hbFBwkTcHzbssJCAmTxFTv6',
-                                     port = 5432)
+        self.connection = pg.connect(
+            host="db.bit.io",
+            database="pashovv/MCLS",
+            user="pashovv",
+            password="v2_3y7vQ_hbFBwkTcHzbssJCAmTxFTv6",
+            port=5432,
+        )
         self.cursor = self.connection.cursor()
 
     # @staticmethod
@@ -42,12 +42,12 @@ class Database:
         date = date_param.copy()
         date.reverse()
         # Rework list of ints of type[d,m,y] into YYYY-MM-DD
-        return '-'.join([str(x) for x in date])
+        return "-".join([str(x) for x in date])
 
     # Customer actions
     def add_customer(self, customer_data):
         try:
-            query = 'INSERT INTO customers(fname, lname, phone, skin_type, mail) VALUES(%s, %s, %s, %s, %s) RETURNING *'
+            query = "INSERT INTO customers(fname, lname, phone, skin_type, mail) VALUES(%s, %s, %s, %s, %s) RETURNING *"
 
             self.cursor.execute(query, tuple(customer_data))
             self.connection.commit()
@@ -59,7 +59,7 @@ class Database:
 
     def get_customer(self, customer_id):
         try:
-            query = 'SELECT * FROM customers WHERE customer_id=%s'
+            query = "SELECT * FROM customers WHERE customer_id=%s"
             self.cursor.execute(query, (customer_id,))
             return self.cursor.fetchone()
         except psycopg2.OperationalError:
@@ -68,7 +68,7 @@ class Database:
 
     def get_customer_short(self, customer_id):
         try:
-            query = 'SELECT fname, lname, phone FROM customers WHERE customer_id=%s'
+            query = "SELECT fname, lname, phone FROM customers WHERE customer_id=%s"
             self.cursor.execute(query, (customer_id,))
             return self.cursor.fetchone()
 
@@ -79,10 +79,16 @@ class Database:
     def find_customer(self, data):
         try:
             # Strings to be added to the query, depending on values for which columns are provided
-            strings = ['customer_id = %s', 'fname = %s', 'lname = %s', 'phone = %s', 'mail = %s']
+            strings = [
+                "customer_id = %s",
+                "fname = %s",
+                "lname = %s",
+                "phone = %s",
+                "mail = %s",
+            ]
 
             # Base SELECT query to which will be added the needed items for the strings list
-            query = 'SELECT * FROM customers WHERE '
+            query = "SELECT * FROM customers WHERE "
 
             # Search conditions depending on for which columns are provided values
             # It will hold values from the strings list
@@ -97,14 +103,14 @@ class Database:
             for index, entry in enumerate(data):
                 # If no search value is entered in the box, there should be empty string
                 # Therefore, if entry in data is anything else, it should be search parameter
-                if entry != '':
+                if entry != "":
                     # Add the given value to the list of values
                     criteria.append(entry)
                     # Append the corresponding string(part of the query) to the list
                     conditions.append(strings[index])
                     # If this is not the first condition, inser 'AND'
                     if conditions_counter > 0:
-                        conditions.append('AND')
+                        conditions.append("AND")
                     conditions_counter += 1
 
             # Format query based on the conditions list
@@ -117,11 +123,15 @@ class Database:
             self.init_connection()
             return self.find_customer(data)
         except psycopg2.errors.InvalidTextRepresentation:
-            return 'error'
+            return "error"
 
     def edit_customer(self, customer_id, field, value):
         try:
-            query = 'UPDATE customers SET ' + field + ' = %s WHERE customer_id = %s RETURNING *'
+            query = (
+                "UPDATE customers SET "
+                + field
+                + " = %s WHERE customer_id = %s RETURNING *"
+            )
             self.cursor.execute(query, (value, customer_id))
             self.connection.commit()
             return self.cursor.fetchone()
@@ -133,7 +143,7 @@ class Database:
     # Treatments actions
     def get_customer_treatments(self, customer_id):
         try:
-            query = 'SELECT date, time, zone, i, hz, j, is_complete FROM treatments WHERE customer_id=%s'
+            query = "SELECT date, time, zone, i, hz, j, is_complete FROM treatments WHERE customer_id=%s"
             self.cursor.execute(query, (customer_id,))
             return self.cursor.fetchall()
 
@@ -144,14 +154,24 @@ class Database:
     def book_treatment(self, customer_id, date, time, duration, zones):
         try:
             # Base query to which will be added the values tuples
-            base_query = 'INSERT INTO treatments(customer_id, zone, date, time, duration, is_complete) VALUES'
+            base_query = "INSERT INTO treatments(customer_id, zone, date, time, duration, is_complete) VALUES"
 
             # Sub-query that will contain the tuples with the values for the actual treatements
-            treatments_args = ','.join(self.cursor.mogrify('(%s, %s, %s, %s, %s, %s)'
-                                                           , (customer_id, zone, self.transform_date(date), time, duration,
-                                                              False)).decode('UTF-8')
-                                       for zone in zones)
-            print('mogrified: {}'.format(treatments_args))
+            treatments_args = ",".join(
+                self.cursor.mogrify(
+                    "(%s, %s, %s, %s, %s, %s)",
+                    (
+                        customer_id,
+                        zone,
+                        self.transform_date(date),
+                        time,
+                        duration,
+                        False,
+                    ),
+                ).decode("UTF-8")
+                for zone in zones
+            )
+            print("mogrified: {}".format(treatments_args))
             self.cursor.execute(base_query + treatments_args)
             self.connection.commit()
 
@@ -161,11 +181,13 @@ class Database:
 
     def complete_treatments(self, treatment_ids, data):
         try:
-            query_single = 'UPDATE treatments SET is_complete = %s, i = %s, hz = %s, j=%s WHERE treatment_id = %s;'
+            query_single = "UPDATE treatments SET is_complete = %s, i = %s, hz = %s, j=%s WHERE treatment_id = %s;"
 
-            query = ''
+            query = ""
             for index, treatment_id in enumerate(treatment_ids):
-                query += self.cursor.mogrify(query_single, (True, *data[index], treatment_id)).decode('UTF-8')
+                query += self.cursor.mogrify(
+                    query_single, (True, *data[index], treatment_id)
+                ).decode("UTF-8")
 
             self.cursor.execute(query)
             self.connection.commit()
@@ -176,7 +198,7 @@ class Database:
 
     def edit_complete_treatment(self, treatment_id, field, value):
         try:
-            query = 'UPDATE treatments SET ' + field + '=%s WHERE treatment_id = %s'
+            query = "UPDATE treatments SET " + field + "=%s WHERE treatment_id = %s"
             self.cursor.execute(query, (value, treatment_id))
             self.connection.commit()
 
@@ -188,7 +210,7 @@ class Database:
         try:
             # Returning the treatment_id that is obviouslty known would not slow down the request return
             # However it will contribute to readability when passing argumnets from model.select_treatment()
-            query = 'SELECT treatment_id, zone, i, hz, j FROM treatments WHERE treatment_id=%s'
+            query = "SELECT treatment_id, zone, i, hz, j FROM treatments WHERE treatment_id=%s"
             self.cursor.execute(query, (treatment_id,))
             return self.cursor.fetchone()
 
@@ -198,10 +220,15 @@ class Database:
 
     def delete_treatment(self, treatment_ids):
         try:
-            query = 'DELETE FROM treatments WHERE '
-            args = ' OR '.join(
-                [self.cursor.mogrify('treatment_id = %s', (treatment_id,)).decode('UTF-8') for treatment_id in
-                 treatment_ids])
+            query = "DELETE FROM treatments WHERE "
+            args = " OR ".join(
+                [
+                    self.cursor.mogrify("treatment_id = %s", (treatment_id,)).decode(
+                        "UTF-8"
+                    )
+                    for treatment_id in treatment_ids
+                ]
+            )
             self.cursor.execute(query + args)
             self.connection.commit()
 
@@ -212,7 +239,7 @@ class Database:
     # Notes actions
     def get_notes(self, customer_id):
         try:
-            query = 'SELECT note_id, note FROM notes WHERE customer_id=%s'
+            query = "SELECT note_id, note FROM notes WHERE customer_id=%s"
             self.cursor.execute(query, (customer_id,))
             return self.cursor.fetchall()
 
@@ -222,7 +249,7 @@ class Database:
 
     def add_note(self, customer_id, note):
         try:
-            query = 'INSERT INTO notes(customer_id, note) VALUES(%s, %s)'
+            query = "INSERT INTO notes(customer_id, note) VALUES(%s, %s)"
             self.cursor.execute(query, (customer_id, note))
             self.connection.commit()
 
@@ -232,7 +259,10 @@ class Database:
 
     def edit_note(self, note_data):
         try:
-            query = self.cursor.mogrify('UPDATE notes SET note=%s WHERE note_id=%s', (note_data[1], note_data[0]))
+            query = self.cursor.mogrify(
+                "UPDATE notes SET note=%s WHERE note_id=%s",
+                (note_data[1], note_data[0]),
+            )
             self.cursor.execute(query)
             self.connection.commit()
 
@@ -242,7 +272,7 @@ class Database:
 
     def delete_note(self, note_id):
         try:
-            query = 'DELETE FROM notes WHERE note_id=%s'
+            query = "DELETE FROM notes WHERE note_id=%s"
             self.cursor.execute(query, (note_id,))
             self.connection.commit()
 
@@ -253,7 +283,7 @@ class Database:
     # Calendar actions
     def get_day(self, date):
         try:
-            query = 'SELECT treatment_id, time, zone, customer_id, duration, is_complete FROM treatments WHERE date = %s'
+            query = "SELECT treatment_id, time, zone, customer_id, duration, is_complete FROM treatments WHERE date = %s"
             self.cursor.execute(query, (self.transform_date(date),))
             return self.cursor.fetchall()
 
@@ -264,7 +294,7 @@ class Database:
     # Operator actions
     def add_operator(self, date, operator):
         try:
-            query = 'INSERT INTO operators(date, operator) VALUES(%s,%s)'
+            query = "INSERT INTO operators(date, operator) VALUES(%s,%s)"
             self.cursor.execute(query, (self.transform_date(date), operator))
             self.connection.commit()
 
@@ -274,7 +304,7 @@ class Database:
 
     def update_operator(self, date, operator):
         try:
-            query = 'UPDATE operators SET operator=%s WHERE date=%s'
+            query = "UPDATE operators SET operator=%s WHERE date=%s"
             self.cursor.execute(query, (operator, self.transform_date(date)))
             self.connection.commit()
 
@@ -284,7 +314,7 @@ class Database:
 
     def get_operator(self, date):
         try:
-            query = 'SELECT operator from operators where date=%s'
+            query = "SELECT operator from operators where date=%s"
             self.cursor.execute(query, (self.transform_date(date),))
             return self.cursor.fetchone()
 
@@ -295,7 +325,7 @@ class Database:
     # SMS actions
     def is_daily_sms_sent(self, date):
         try:
-            query = 'SELECT is_sent FROM daily_sms WHERE date = %s'
+            query = "SELECT is_sent FROM daily_sms WHERE date = %s"
             self.cursor.execute(query, (self.transform_date(date),))
             return self.cursor.fetchone()
         except psycopg2.OperationalError:
@@ -304,13 +334,12 @@ class Database:
 
     def set_daily_sms(self, date):
         try:
-            query = 'INSERT INTO daily_sms(date, is_sent) VALUES(%s, %s)'
+            query = "INSERT INTO daily_sms(date, is_sent) VALUES(%s, %s)"
             self.cursor.execute(query, (self.transform_date(date), True))
             self.connection.commit()
         except psycopg2.OperationalError:
             self.init_connection()
             self.set_daily_sms(date)
-
 
     #
 

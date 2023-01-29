@@ -1,5 +1,3 @@
-from tkinter import Tk, Frame, font, Label
-
 from Controller.controller import Controller
 
 
